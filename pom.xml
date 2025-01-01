@@ -29,6 +29,16 @@
 
 		<!-- Spring Boot DevTools for hot swapping, useful during development -->
 		<dependency>
+
+			.   ____          _            __ _ _
+			/\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+			( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+			\\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+			'  |____| .__|_| |_|_| |_\__, | / / / /
+			=========|_|==============|___/=/_/_/_/
+
+			:: Spring Boot ::                (v3.4.1)
+
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>

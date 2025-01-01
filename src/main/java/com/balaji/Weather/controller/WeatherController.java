@@ -1,12 +1,14 @@
 package com.balaji.Weather.controller;
 
-import com.balaji.Weather.model.WeatherData;
+import java.util.stream.Collectors;
 import com.balaji.Weather.service.WeatherService;
-import com.balaji.Weather.exception.WeatherServiceException;
+import com.balaji.Weather.model.WeatherData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/weather")
@@ -15,35 +17,36 @@ public class WeatherController {
     @Autowired
     private WeatherService weatherService;
 
+    // Endpoint to fetch weather for a given city
     @GetMapping("/{city}")
-    public ResponseEntity<Object> getWeather(@PathVariable String city) {
+    public ResponseEntity<?> getWeather(@PathVariable String city) {
         try {
-            WeatherData weatherData = weatherService.getWeather(city);
+            WeatherData weatherData = weatherService.getWeatherData(city);
             return ResponseEntity.ok(weatherData);
-        } catch (WeatherServiceException e) {
-            return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Weather data unavailable");
         }
     }
 
-    // Custom error response format
-    public static class ErrorResponse {
-        private String message;
-
-        public ErrorResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
+    // Endpoint to fetch weather for current location based on latitude and longitude
+    @GetMapping("/current-location")
+    public ResponseEntity<?> getWeatherForCurrentLocation(@RequestParam double latitude, @RequestParam double longitude) {
+        try {
+            WeatherData weatherData = weatherService.getWeatherForLocation(latitude, longitude);
+            return ResponseEntity.ok(weatherData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to fetch weather for the current location");
         }
     }
 
-    @ExceptionHandler(WeatherServiceException.class)
-    public ResponseEntity<ErrorResponse> handleWeatherServiceException(WeatherServiceException ex) {
-        return new ResponseEntity<>(new ErrorResponse(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    // Endpoint to fetch weather data for top cities
+    @GetMapping("/top-cities")
+    public ResponseEntity<List<WeatherData>> getWeatherForTopCities() {
+        try {
+            List<WeatherData> weatherDataList = weatherService.getTopCitiesWeather();
+            return ResponseEntity.ok(weatherDataList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }

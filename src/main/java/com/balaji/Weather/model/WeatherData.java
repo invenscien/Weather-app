@@ -1,9 +1,24 @@
 package com.balaji.Weather.model;
 
 public class WeatherData {
+    private String city;
     private double temperature;
     private String condition;
     private double windSpeed;
+    private String windSpeedUnit = "km/h";
+    public String getWindSpeedUnit() {
+        return windSpeedUnit;
+    }
+
+    public String getCity(){
+        return city;
+    }
+
+    public void setCity(String city){
+        this.city = city;
+    }
+
+
 
     public double getTemperature() {
         return temperature;

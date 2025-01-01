@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class WeatherService {
@@ -28,28 +28,49 @@ public class WeatherService {
     @Value("${weather.api2.key}")
     private String api2Key;
 
-    @Value("${weather.api3.url}")
-    private String api3Url;
-
     private final OkHttpClient httpClient = new OkHttpClient();
 
-    public WeatherData getWeather(String city) {
+    // Method to fetch weather data for a given city
+    public WeatherData getWeatherData(String city) {
+        // Fetch temperature and condition from OpenWeatherMap
         WeatherData tempData = fetchTemperatureAndConditionFromOpenWeather(city);
-        WeatherData windData = fetchWindFromWeatherAPI(city);
 
-        return reconcileWeatherData(tempData, windData);
+        if (tempData == null) {
+            tempData = new WeatherData();
+            tempData.setCity(city);
+        }
+
+        // Fetch wind speed from WeatherAPI if available
+        WeatherData windData = fetchWindFromWeatherAPI(city);
+        if (windData != null) {
+            tempData.setWindSpeed(windData.getWindSpeed()); // Ensure wind speed is set
+        }
+
+        return tempData;
     }
 
+    // Method to fetch weather data for a given location based on latitude and longitude
+    public WeatherData getWeatherForLocation(double latitude, double longitude) {
+        // API URL for weather based on latitude and longitude (example for OpenWeatherMap)
+        String url = api1Url + "?lat=" + latitude + "&lon=" + longitude + "&appid=" + api1Key;
+
+        // Fetch the weather data for the location
+        return fetchWeatherData(url, "OpenWeatherMap");
+    }
+
+    // Fetch temperature and condition from OpenWeatherMap API
     private WeatherData fetchTemperatureAndConditionFromOpenWeather(String city) {
         String url = api1Url + "?q=" + city + "&appid=" + api1Key;
         return fetchWeatherData(url, "OpenWeatherMap");
     }
 
+    // Fetch wind data from WeatherAPI
     private WeatherData fetchWindFromWeatherAPI(String city) {
         String url = api2Url + "?key=" + api2Key + "&q=" + city;
         return fetchWeatherData(url, "WeatherAPI");
     }
 
+    // Fetch weather data from a given URL
     private WeatherData fetchWeatherData(String url, String apiName) {
         try {
             Request request = new Request.Builder().url(url).build();
@@ -57,7 +78,6 @@ public class WeatherService {
 
             if (response.isSuccessful() && response.body() != null) {
                 String jsonResponse = response.body().string();
-                System.out.println("API Response from " + apiName + ": " + jsonResponse);
                 return parseWeatherResponse(jsonResponse, apiName);
             } else {
                 System.err.println("Error fetching data from " + apiName + ": " + response.message());
@@ -68,6 +88,7 @@ public class WeatherService {
         return null;
     }
 
+    // Parse the weather API response to extract necessary details
     private WeatherData parseWeatherResponse(String jsonResponse, String apiName) {
         ObjectMapper mapper = new ObjectMapper();
         WeatherData weatherData = new WeatherData();
@@ -75,25 +96,26 @@ public class WeatherService {
         try {
             JsonNode root = mapper.readTree(jsonResponse);
             if ("OpenWeatherMap".equals(apiName)) {
-                // Temperature: Convert from Kelvin to Celsius
+                // Get temperature in Celsius (from Kelvin)
                 double tempKelvin = root.path("main").path("temp").asDouble();
-                weatherData.setTemperature(tempKelvin - 273.15);
+                weatherData.setTemperature(tempKelvin - 273.15); // Convert to Celsius
 
-                // Condition: Use description
+                // Get weather condition
                 JsonNode weatherNode = root.path("weather").get(0);
                 if (weatherNode != null) {
                     weatherData.setCondition(weatherNode.path("description").asText());
                 }
+
+                // Get wind speed from OpenWeatherMap API (in meters per second)
+                double windSpeedMps = root.path("wind").path("speed").asDouble();
+                weatherData.setWindSpeed(windSpeedMps * 3.6); // Convert to km/h
+
             } else if ("WeatherAPI".equals(apiName)) {
-                // Temperature: Directly use Celsius value
-                double tempCelsius = root.path("current").path("temp_c").asDouble();
-                weatherData.setTemperature(tempCelsius);
+                // Get wind speed (already in km/h)
+                double windSpeedKph = root.path("current").path("wind_kph").asDouble();
+                weatherData.setWindSpeed(windSpeedKph); // No conversion needed, already in km/h
 
-                // Wind Speed: Convert from kph to m/s
-                double windKph = root.path("current").path("wind_kph").asDouble();
-                weatherData.setWindSpeed(windKph / 3.6);
-
-                // Condition: Use text if available
+                // Get weather condition
                 String condition = root.path("current").path("condition").path("text").asText();
                 if (condition != null && !condition.isEmpty()) {
                     weatherData.setCondition(condition);
@@ -106,32 +128,13 @@ public class WeatherService {
         return weatherData;
     }
 
-    private WeatherData reconcileWeatherData(WeatherData... dataSources) {
-        WeatherData result = new WeatherData();
-
-        // Prioritize the temperature from WeatherAPI (more direct)
-        result.setTemperature(Arrays.stream(dataSources)
-                .filter(Objects::nonNull)
-                .map(WeatherData::getTemperature)
-                .findFirst()
-                .orElse(0.0));
-
-        // Use the most accurate condition available
-        result.setCondition(Arrays.stream(dataSources)
-                .filter(Objects::nonNull)
-                .map(WeatherData::getCondition)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse("Unknown"));
-
-        // Average the wind speed from available data
-        result.setWindSpeed(Arrays.stream(dataSources)
-                .filter(Objects::nonNull)
-                .mapToDouble(WeatherData::getWindSpeed)
-                .average()
-                .orElse(0.0));
-
-        return result;
+    // Method to fetch weather for the top cities
+    public List<WeatherData> getTopCitiesWeather() {
+        List<String> cities = List.of("Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata");
+        return cities.stream().map(city -> {
+            WeatherData weatherData = getWeatherData(city);
+            weatherData.setCity(city);
+            return weatherData;
+        }).collect(Collectors.toList());
     }
-
 }
