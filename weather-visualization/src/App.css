@@ -1,0 +1,173 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Ensures no scrollbars appear */
+}
+
+* {
+  margin: 0; /* Reset all margins */
+  padding: 0; /* Reset all paddings */
+  box-sizing: border-box; /* Include padding/border in size calculations */
+}
+
+/* App Container */
+.app-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-image: url('moutain.jpg'); /* Replace with your image path */
+  background-size: cover; /* Ensure the image fully covers the viewport */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent tiling */
+  background-attachment: fixed; /* Keep the image fixed while scrolling */
+  position: absolute; /* Ensure it covers the entire viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: #fff;
+  padding: 20px;
+}
+
+/* Title Styling */
+.app-title {
+  font-size: 36px;
+  color: #007BFF;
+  font-weight: bold;
+  margin-top: 20px;
+  text-align: center;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Input Section */
+.input-container {
+  margin: 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.city-input {
+  padding: 12px;
+  margin: 5px;
+  width: 250px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.city-input:focus {
+  border-color: #007BFF;
+  outline: none;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
+}
+
+.fetch-button {
+  padding: 12px 20px;
+  margin: 5px;
+  cursor: pointer;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.fetch-button:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+/* Weather Display Box */
+.weather-card {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent dark background */
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+  text-align: left;
+  transition: transform 0.2s ease;
+}
+
+.weather-card:hover {
+  transform: scale(1.02);
+}
+
+.weather-header {
+  font-size: 24px;
+  font-weight: bold;
+  color: #00d4ff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.weather-detail {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #e0e0e0;
+}
+
+.weather-detail span {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* Top Cities Section */
+.top-cities-title {
+  margin: 40px 0 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #00d4ff;
+  text-align: center;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.top-cities-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.top-city-card {
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #00796b; /* Teal background */
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: left;
+  transition: transform 0.2s ease;
+}
+
+.top-city-card:hover {
+  transform: scale(1.05);
+}
+
+.top-city-card h4 {
+  color: #00d4ff;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.top-city-card .weather-detail {
+  font-size: 16px;
+  color: #e0f7fa; /* Lighter teal for details */
+}
+
+/* Loading and Error Messages */
+.loading-message, .error-message {
+  font-size: 18px;
+  margin-top: 20px;
+  text-align: center;
+  color: #ff0000;
+}
